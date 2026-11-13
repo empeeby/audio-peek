@@ -15,6 +15,14 @@ A combined **waveform + spectrogram** image, plus audio file metadata
   of channel count, so channels get proportionally thinner bands instead of the
   image growing taller.
 - **Metadata panel** — populated from `mediainfo` (shown only when available).
+- **Renders on hover** — the image is generated when you land on a file
+  and cached; cached previews show instantly. Moving on cancels the render, so
+  opening a folder with hundreds of audio files doesn't kick off hundreds of
+  sox/ffmpeg jobs.
+- **Graduated sampling** — audio is decoded once to a small 12 kHz wav. Files
+  up to 2 minutes are decoded whole; longer ones are sampled (32 × 1s snippets
+  up to 10 minutes, 64 × 0.5s beyond), so even hour-long files render in well
+  under a second.
 
 ## Requirements
 
@@ -38,14 +46,11 @@ Or copy this directory to `~/.config/yazi/plugins/audio-peek.yazi`.
 
 ## Usage
 
-Register it as the previewer and preloader for audio in your `yazi.toml`:
+Register it as the previewer for audio in your `yazi.toml`:
 
 ```toml
 [plugin]
 prepend_previewers = [
-  { mime = "audio/*", run = "audio-peek" },
-]
-prepend_preloaders = [
   { mime = "audio/*", run = "audio-peek" },
 ]
 ```
@@ -56,6 +61,11 @@ The opinionated bits live as tunables at the top of `main.lua`:
 
 - `WAVEFORM_COLOR` — waveform colour (any ffmpeg colour spec, default `#ff33dd`).
 - `SPECTROGRAM_HEIGHT` — combined spectrogram height in px (default `275`).
+- `DEBOUNCE` — seconds to wait on an uncached file before rendering (default `0.05`).
+- `LEVELS` — how much audio to decode for each duration band (whole file, or
+  snippet count × length).
+- `DECODE_RATE` — sample rate of the decoded audio; the spectrogram shows
+  0 – rate/2 Hz (default `12000`).
 
 ## Credits
 
